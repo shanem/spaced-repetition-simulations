@@ -22,25 +22,29 @@ srsSimulation <- function(newTermsPerDay=10, termCount=1000, schedule=rep(1, 60)
     reviewTermsStudied <- rep(0, length(schedule))
     newTermsRemaining <- termCount
     
-    for (day in seq_along(schedule)) {
-        if (schedule[day] == 0) {
+    for (today in seq_along(schedule)) {
+        tomorrow <- today + 1
+        if (schedule[today] == 0) {
+            if (today < length(schedule)) {
+                currentReviews[[tomorrow]] <- c(currentReviews[[tomorrow]], currentReviews[[today]])
+            }
             next
         }
         newTermsToday = newTermsPerDay
          
-        currentReviews[[day]] <- c(currentReviews[[day]], rep(0, newTermsToday))
-        updatedProgress <- study(currentReviews[[day]], correctRate=correctRate)
+        currentReviews[[today]] <- c(currentReviews[[today]], rep(0, newTermsToday))
+        updatedProgress <- study(currentReviews[[today]], correctRate=correctRate)
         delay <- delayForProgress(updatedProgress, easinessFactor)
         
         mapply(function(updatedProgress, delay) {
-            nextDay <- day + delay
+            nextDay <- today + delay
             if (nextDay <= length(currentReviews)) {
                 currentReviews[[nextDay]] <<- c(currentReviews[[nextDay]], updatedProgress)
             }
         }, updatedProgress, delay)
         
-        newTermsStudied[day] <- newTermsToday
-        reviewTermsStudied[day] <- length(currentReviews[[day]]) - newTermsToday
+        newTermsStudied[today] <- newTermsToday
+        reviewTermsStudied[today] <- length(currentReviews[[today]]) - newTermsToday
     }
 
     data.frame(newTermsStudied=newTermsStudied,
