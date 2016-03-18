@@ -1,3 +1,5 @@
+library(plotly)
+
 delayForProgress <- function(progress, easinessFactor) {
     ceiling(easinessFactor ^ (progress - 1))
 }
@@ -43,4 +45,25 @@ srsSimulation <- function(newTermsPerDay=10, termCount=1000, schedule=rep(1, 60)
 
     data.frame(newTermsStudied=newTermsStudied,
                 reviewTermsStudied=reviewTermsStudied)
+}
+
+chartResults <- function(results) {
+    days <- seq_along(results$newTermsStudied)
+    newTerms <- plot_ly(
+        x=days,
+        y=results$newTermsStudied,
+        name="New",
+        type="bar"
+    )
+    chart <- add_trace(
+        newTerms,
+        x = days,
+        y = results$reviewTermsStudied,
+        name = "Review",
+        type="bar"
+    )
+    layout(chart,
+          barmode = "stack",
+          xaxis=list(title="Days"),
+          yaxis=list(title="Terms Studied"))
 }
